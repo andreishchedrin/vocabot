@@ -1,11 +1,12 @@
 package main
 
 import (
+	"net/http"
 	"fmt"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"math/rand"
-	"time"
+	"time"	
 )
 
 var numericKeyboard = tgbotapi.NewReplyKeyboard(
@@ -14,7 +15,7 @@ var numericKeyboard = tgbotapi.NewReplyKeyboard(
 	),
 )
 
-func telegramBot(token string) {
+func telegramBot(token string, hook string, cert string, key string) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		log.Panic(err)
@@ -28,10 +29,20 @@ func telegramBot(token string) {
 	bot.Debug = true
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	// u := tgbotapi.NewUpdate(0)
+	// u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
+	// updates, err := bot.GetUpdatesChan(u)
+
+
+
+	_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert(fmt.Sprintf("https://%s/%s", hook, token), cert))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	updates := bot.ListenForWebhook("/" + token)
+	go http.ListenAndServeTLS("0.0.0.0:8443", cert, key, nil)
 
 	for update := range updates {
 

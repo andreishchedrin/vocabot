@@ -13,8 +13,10 @@ func init() {
     }
 }
 
-func main() {
-	var token string 
-	token, _ = os.LookupEnv("TG_TOKEN")	
-	telegramBot(token)
+func main() {	 
+	token, _ := os.LookupEnv("TG_TOKEN")	
+	hook, _ := os.LookupEnv("WEB_HOOK_ADDRESS")
+	cert, _ := os.LookupEnv("CERT")
+	key, _ := os.LookupEnv("KEY")
+	telegramBot(token, hook, cert, key)
 }
