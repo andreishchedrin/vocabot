@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+	"encoding/json"
 )
 
 // Quiz struct
@@ -71,7 +72,7 @@ func telegramBot(token string, hook string, cert string, key string) {
 
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 			opt := []string{"Test1", "TEst2", "Test3"}
-			quiz := Quiz{ChatID: update.Message.Chat.ID, Question: "Choose right answer:", Options: opt, Type: "quiz", CorrectOptionID: 0}
+			quiz := &Quiz{ChatID: update.Message.Chat.ID, Question: "Choose right answer:", Options: opt, Type: "quiz", CorrectOptionID: 0}
 			switch update.Message.Command() {
 			case "start":
 				msg.Text = "Type /next."
@@ -83,10 +84,17 @@ func telegramBot(token string, hook string, cert string, key string) {
 				res := data[rand]
 				msg.Text = res.Origin + " - " + res.Translate
 				msg.ReplyMarkup = numericKeyboard
+
+				// temporary
 				url := "https://api.telegram.org/bot1209313230:AAFK2qDwS7SKnrWDXFxdmZVQYuw6CYNkoMg/sendPoll"
-				var jsonStr = []byte(fmt.Sprintf("%v", quiz))
+
+				buf := new(bytes.Buffer)
+				json.NewEncoder(buf).Encode(quiz)
+				// var jsonStr = []byte(fmt.Sprintf("%v", quiz))
+
+
 				log.Printf("poll: %s", fmt.Sprintf("%v", quiz))
-				req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+				req, err := http.NewRequest("POST", url, buf)
 				if err != nil {
 					panic(err)
 				}
