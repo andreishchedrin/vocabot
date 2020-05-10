@@ -40,7 +40,7 @@ func telegramBot(token string, hook string, cert string, key string) {
 	}
 
 	updates := bot.ListenForWebhook("/" + token)
-	go http.ListenAndServeTLS("0.0.0.0:8443", cert, key, nil)
+	go http.ListenAndServeTLS(hook, cert, key, nil)
 
 	for update := range updates {
 
