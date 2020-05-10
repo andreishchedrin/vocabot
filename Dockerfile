@@ -30,7 +30,7 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 # Copy the Pre-built binary file from the previous stage. Observe we also copied the .env file
-COPY --from=builder /app/* .
+COPY --from=builder /app/* /app/
 # COPY --from=builder /app/.env .       
 
 # Expose port 8080 to the outside world
