@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
-	"math/rand"
-	"time"	
+	// "math/rand"
+	// "time"	
 )
 
 var numericKeyboard = tgbotapi.NewReplyKeyboard(
@@ -21,10 +21,10 @@ func telegramBot(token string, hook string, cert string, key string) {
 		log.Panic(err)
 	}
 
-	data, err := GetData()
-	if err != nil {
-		log.Panic(err)
-	}	
+	// data, err := GetData()
+	// if err != nil {
+	// 	log.Panic(err)
+	// }	
 
 	bot.Debug = true
 	log.Printf("Authorized on account %s", bot.Self.UserName)
@@ -40,42 +40,44 @@ func telegramBot(token string, hook string, cert string, key string) {
 	}
 
 	updates := bot.ListenForWebhook("/" + token)
-	go http.ListenAndServeTLS(hook, cert, key, nil)
+	go http.ListenAndServeTLS("0.0.0.0:8443", cert, key, nil)
 
 	for update := range updates {
 
-		if update.Message == nil {
-			continue
-		}
+		log.Printf("%+v\n", update)
 
-		if update.CallbackQuery != nil {
-			fmt.Print(update)
+		// if update.Message == nil {
+		// 	continue
+		// }
 
-			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data))
+		// if update.CallbackQuery != nil {
+		// 	fmt.Print(update)
 
-			bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data))
-		}
+		// 	bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data))
 
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)		
+		// 	bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data))
+		// }
 
-		if update.Message.IsCommand() {
+		// log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)		
 
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-			switch update.Message.Command() {
-			case "start":
-				msg.Text = "Type /next."	
-			case "help":
-				msg.Text = "Type /next."
-			case "next":
-				rand.Seed(time.Now().UTC().UnixNano())
-				rand := rand.Intn(len(data))
-				res := data[rand]
-				msg.Text = res.Origin + " - " + res.Translate
-				msg.ReplyMarkup = numericKeyboard
-			default:
-				msg.Text = "I don't know that command"
-			}
-			bot.Send(msg)
-		}
+		// if update.Message.IsCommand() {
+
+		// 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+		// 	switch update.Message.Command() {
+		// 	case "start":
+		// 		msg.Text = "Type /next."	
+		// 	case "help":
+		// 		msg.Text = "Type /next."
+		// 	case "next":
+		// 		rand.Seed(time.Now().UTC().UnixNano())
+		// 		rand := rand.Intn(len(data))
+		// 		res := data[rand]
+		// 		msg.Text = res.Origin + " - " + res.Translate
+		// 		msg.ReplyMarkup = numericKeyboard
+		// 	default:
+		// 		msg.Text = "I don't know that command"
+		// 	}
+		// 	bot.Send(msg)
+		// }
 	}
 }

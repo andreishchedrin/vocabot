@@ -36,7 +36,7 @@ COPY --from=builder /app/vocabot.crt .
 COPY --from=builder /app/vocabot.key .       
 
 # Expose port 8080 to the outside world
-# EXPOSE 8080
+EXPOSE 8443
 
 #Command to run the executable
 CMD ["./main"]
