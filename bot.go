@@ -34,8 +34,6 @@ func telegramBot(token string, hook string, cert string, key string) {
 
 	// updates, err := bot.GetUpdatesChan(u)
 
-
-
 	_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert(fmt.Sprintf("https://%s/%s", hook, token), cert))
 	if err != nil {
 		log.Fatal(err)
