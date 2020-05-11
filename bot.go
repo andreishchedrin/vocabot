@@ -80,7 +80,7 @@ func telegramBot(token string, hook string, cert string, key string) {
 			bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data))
 		}
 
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+		// log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 		if update.Message.IsCommand() {		
 
@@ -132,7 +132,7 @@ func telegramBot(token string, hook string, cert string, key string) {
 				defer resp.Body.Close()
 
 				// Log for debug
-				log.Printf("poll: %s", fmt.Sprintf("%v", quiz))
+				// log.Printf("poll: %s", fmt.Sprintf("%v", quiz))
 				
 				// msg.Text = res.Origin + " - " + res.Translate
 				// msg.ReplyMarkup = numericKeyboard
