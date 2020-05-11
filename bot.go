@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 	"encoding/json"
+	"strings"
 )
 
 // Quiz struct
@@ -25,6 +26,19 @@ var numericKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButton("/next"),
 	),
 )
+
+func getRand(length int) int {
+	rand.Seed(time.Now().UTC().UnixNano())
+	index := rand.Intn(length)
+	return index
+}
+
+func getRandSlice(slice *[]string) {
+	rand.Seed(time.Now().UTC().UnixNano())
+	rand.Shuffle(len(*slice), func(i, j int) {
+		(*slice)[i], (*slice)[j] = (*slice)[j], (*slice)[i]
+	})
+}
 
 func telegramBot(token string, hook string, cert string, key string) {
 	bot, err := tgbotapi.NewBotAPI(token)
@@ -68,32 +82,43 @@ func telegramBot(token string, hook string, cert string, key string) {
 
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-		if update.Message.IsCommand() {
+		if update.Message.IsCommand() {		
 
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-			opt := []string{"Test1", "TEst2", "Test3"}
-			quiz := &Quiz{ChatID: update.Message.Chat.ID, Question: "Choose right answer:", Options: opt, Type: "quiz", CorrectOptionID: 0}
+			
 			switch update.Message.Command() {
 			case "start":
 				msg.Text = "Type /next."
 			case "help":
 				msg.Text = "Type /next."
 			case "next":
-				rand.Seed(time.Now().UTC().UnixNano())
-				rand := rand.Intn(len(data))
-				res := data[rand]
-				msg.Text = res.Origin + " - " + res.Translate
-				msg.ReplyMarkup = numericKeyboard
+				
+				// Choose the word which use as rigth answer
+				rand := getRand(len(data))				
+				rightAnswer := data[rand]
+				var rightAnswerIndex int
 
-				// temporary
+				// Choose fake answers
+				list := []string{
+					data[getRand(len(data))].Translate,
+					data[getRand(len(data))].Translate,
+					data[getRand(len(data))].Translate,
+					rightAnswer.Translate,
+				}
+				getRandSlice(&list)				
+				for i, listItem := range list {
+					if listItem == rightAnswer.Translate {
+						rightAnswerIndex = i
+					}
+				}
+
+				// Prepare sendPoll API request 
+				str := strings.ToUpper(rightAnswer.Origin) + ":"				
+				quiz := &Quiz{ChatID: update.Message.Chat.ID, Question: str, Options: list, Type: "quiz", CorrectOptionID: rightAnswerIndex}
 				url := "https://api.telegram.org/bot1209313230:AAFK2qDwS7SKnrWDXFxdmZVQYuw6CYNkoMg/sendPoll"
-
 				buf := new(bytes.Buffer)
-				json.NewEncoder(buf).Encode(quiz)
-				// var jsonStr = []byte(fmt.Sprintf("%v", quiz))
-
-
-				log.Printf("poll: %s", fmt.Sprintf("%v", quiz))
+				json.NewEncoder(buf).Encode(quiz)	
+				// Send poll request			
 				req, err := http.NewRequest("POST", url, buf)
 				if err != nil {
 					panic(err)
@@ -105,10 +130,20 @@ func telegramBot(token string, hook string, cert string, key string) {
 					panic(err)
 				}
 				defer resp.Body.Close()
+
+				// Log for debug
+				log.Printf("poll: %s", fmt.Sprintf("%v", quiz))
+				
+				// msg.Text = res.Origin + " - " + res.Translate
+				// msg.ReplyMarkup = numericKeyboard
+				msg.Text = "Tap /next to continue.."
 			default:
 				msg.Text = "I don't know that command"
 			}
+
+			msg.ReplyMarkup = numericKeyboard
 			bot.Send(msg)
+				
 		}
 	}
 }
